@@ -1,62 +1,44 @@
 <% if (message) { %>
-    <div class="alert <%= message.includes('Error') || message.includes('No User Found') ? 'alert-danger' : 'alert-success' %> alert-dismissible fade show">
-        <%= message %>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <div class="alert <%= message.includes('Error') ? 'alert-danger' : 'alert-success' %> alert-dismissible fade show">
+      <%= message %>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
-    <% } %>
-    
-    <div class="card">
-        <div class="card-header">G License Lookup</div>
-        <div class="card-body">
-            <form method="POST" action="/g/lookup">
-                <div class="mb-3">
-                    <label for="licenseNumber" class="form-label">License Number</label>
-                    <input type="text" class="form-control" id="licenseNumber" name="licenseNumber" pattern="[A-Za-z0-9]{8}" maxlength="8" required>
-                    <small class="form-text text-muted">Enter your 8-character license number</small>
-                </div>
-                <button type="submit" class="btn btn-primary">Lookup</button>
-            </form>
-    
-            <% if (user) { %>
-            <hr>
-            <div class="mt-4">
-                <h4>User Information</h4>
-                <p>Name: <%= user.firstname %> <%= user.lastname %></p>
-                <p>Age: <%= user.age %></p>
-                <p>License Number: <%= user.licenseNo %></p>
-                
-                <form method="POST" action="/g/update">
-                    <input type="hidden" name="licenseNumber" value="<%= user.licenseNo %>">
-                    <div class="card mb-3">
-                        <div class="card-header">Update Car Details</div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-3 mb-3">
-                                    <label for="carMake" class="form-label">Make</label>
-                                    <input type="text" class="form-control" id="carMake" name="carMake" 
-                                        value="<%= user.car_details.make %>">
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <label for="carModel" class="form-label">Model</label>
-                                    <input type="text" class="form-control" id="carModel" name="carModel"
-                                        value="<%= user.car_details.model %>">
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <label for="carYear" class="form-label">Year</label>
-                                    <input type="number" class="form-control" id="carYear" name="carYear" min="1886"
-                                        value="<%= user.car_details.year %>">
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <label for="platNumber" class="form-label">Plate Number</label>
-                                    <input type="text" class="form-control" id="platNumber" name="platNumber"
-                                        value="<%= user.car_details.platno %>">
-                                </div>
-                            </div>
-                            <button type="submit" class="btn btn-success">Update Car Information</button>
-                        </div>
-                    </div>
-                </form>
+  <% } %>
+  
+  <div class="card">
+    <div class="card-header">G License Information</div>
+    <div class="card-body">
+      <h4>Please confirm your information</h4>
+      <p>First Name: <%= user.firstname %></p>
+      <p>Last Name: <%= user.lastname %></p>
+      <p>Age: <%= user.age %></p>
+      <p>License Number: <%= user.licenseNo %></p>
+  
+      <form method="POST" action="/g/update">
+        <div class="card mb-3">
+          <div class="card-header">Update Car Details</div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-3 mb-3">
+                <label for="carMake" class="form-label">Make</label>
+                <input type="text" class="form-control" id="carMake" name="carMake" value="<%= user.car_details.make === 'default' ? '' : user.car_details.make %>">
+              </div>
+              <div class="col-md-3 mb-3">
+                <label for="carModel" class="form-label">Model</label>
+                <input type="text" class="form-control" id="carModel" name="carModel" value="<%= user.car_details.model === 'default' ? '' : user.car_details.model %>">
+              </div>
+              <div class="col-md-3 mb-3">
+                <label for="carYear" class="form-label">Year</label>
+                <input type="number" class="form-control" id="carYear" name="carYear" min="1886" value="<%= user.car_details.year === 0 ? '' : user.car_details.year %>">
+              </div>
+              <div class="col-md-3 mb-3">
+                <label for="platNumber" class="form-label">Plate Number</label>
+                <input type="text" class="form-control" id="platNumber" name="platNumber" value="<%= user.car_details.platno === 'default' ? '' : user.car_details.platno %>">
+              </div>
             </div>
-            <% } %>
+            <button type="submit" class="btn btn-success">Update Car Information</button>
+          </div>
         </div>
+      </form>
     </div>
+  </div>
