@@ -14,7 +14,7 @@ connectDB();
 
 // Session setup
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-secret-key',
+  secret: process.env.SESSION_SECRET || 'fallback_secret',
   resave: false,
   saveUninitialized: false
 }));
