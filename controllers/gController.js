@@ -58,7 +58,7 @@ exports.updateG = async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    const user = await User.findById(req.session.user._id); // Re-fetch user for consistency
+    const user = await User.findById(req.session.user._id); // Re-fetch user
     res.render('g', {
       title: 'G License',
       user: user ? { ...user._doc, licenseNo: user.getDecryptedLicenseNo() } : null,
