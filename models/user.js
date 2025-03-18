@@ -1,40 +1,45 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');  // encryption library
+const bcrypt = require('bcryptjs'); // for password 
+const crypto = require('crypto');   // for license encryption
+
+
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || '12345678901345678901234567890123'; 
+const IV_LENGTH = 16; 
+
 const userSchema = new mongoose.Schema({
   firstname: {
     type: String,
-    default: 'default', 
+    default: 'default',
     trim: true
   },
   lastname: {
     type: String,
-    default: 'default', 
+    default: 'default',
     trim: true
   },
   licenseNo: {
     type: String,
-    default: 'default', 
+    default: 'default',
     trim: true
   },
   age: {
     type: Number,
-    default: 0, 
-   
+    default: 0
   },
   dob: {
     type: Date
   },
-  username: { 
+  username: {
     type: String,
     required: true,
     unique: true,
     trim: true
   },
-  password: { 
+  password: {
     type: String,
     required: true
   },
-  userType: { // for signup
+  userType: {
     type: String,
     enum: ['Driver', 'Examiner', 'Admin'],
     default: 'Driver'
@@ -42,7 +47,7 @@ const userSchema = new mongoose.Schema({
   car_details: {
     make: {
       type: String,
-      default: 'default', 
+      default: 'default',
       trim: true
     },
     model: {
@@ -52,26 +57,53 @@ const userSchema = new mongoose.Schema({
     },
     year: {
       type: Number,
-      default: 0,
-      
+      default: 0
     },
     platno: {
       type: String,
-      default: 'default', 
+      default: 'default',
       trim: true
     }
   }
 });
 
-// new change: Encrypt password and licenseNo before saving
+// Encrypt function
+function encrypt(text) {
+  const iv = crypto.randomBytes(IV_LENGTH);
+  const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY), iv);
+  let encrypted = cipher.update(text);
+  encrypted = Buffer.concat([encrypted, cipher.final()]);
+  return iv.toString('hex') + ':' + encrypted.toString('hex');
+}
+
+// Decrypt function
+function decrypt(text) {
+  const textParts = text.split(':');
+  const iv = Buffer.from(textParts.shift(), 'hex');
+  const encryptedText = Buffer.from(textParts.join(':'), 'hex');
+  const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY), iv);
+  let decrypted = decipher.update(encryptedText);
+  decrypted = Buffer.concat([decrypted, decipher.final()]);
+  return decrypted.toString();
+}
+
+// Encrypt password and licenseNo before saving
 userSchema.pre('save', async function(next) {
   if (this.isModified('password')) {
-    this.password = await bcrypt.hash(this.password, 10);
+    this.password = await bcrypt.hash(this.password, 10); // for password
   }
   if (this.isModified('licenseNo') && this.licenseNo !== 'default') {
-    this.licenseNo = await bcrypt.hash(this.licenseNo, 10);
+    this.licenseNo = encrypt(this.licenseNo); // encryption for licenseNo
   }
   next();
 });
+
+// Method to decrypt licenseNo when fetching
+userSchema.methods.getDecryptedLicenseNo = function() {
+  if (this.licenseNo !== 'default') {
+    return decrypt(this.licenseNo);
+  }
+  return this.licenseNo;
+};
 
 module.exports = mongoose.model('User', userSchema);
