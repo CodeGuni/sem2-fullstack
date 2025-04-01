@@ -13,7 +13,12 @@ exports.postLogin = async (req, res) => {
       return res.render('login', { title: 'Login', message: 'Incorrect username or password' });
     }
     req.session.user = { _id: user._id, userType: user.userType };
-    res.redirect('/g2');
+
+    if (user.userType === 'Admin') {
+      res.redirect('/appointments');
+    } else {
+      res.redirect('/g2');
+    }
   } catch (err) {
     res.render('login', { title: 'Login', message: 'Error logging in: ' + err.message });
   }
@@ -35,7 +40,11 @@ exports.postSignup = async (req, res) => {
     const user = new User({ username, password, userType });
     await user.save();
     req.session.user = { _id: user._id, userType: user.userType };
-    res.redirect('/g2');
+    if (user.userType === 'Admin') {
+      res.redirect('/appointments');
+    } else {
+      res.redirect('/g2');
+    }
   } catch (err) {
     res.render('login', { title: 'Login', message: 'Error signing up: ' + err.message });
   }

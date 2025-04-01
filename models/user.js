@@ -1,73 +1,28 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs'); // for password 
-const crypto = require('crypto');   // for license encryption
+const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 
-
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || '12345678901345678901234567890123'; 
-const IV_LENGTH = 16; 
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || '12345678901345678901234567890123';
+const IV_LENGTH = 16;
 
 const userSchema = new mongoose.Schema({
-  firstname: {
-    type: String,
-    default: 'default',
-    trim: true
-  },
-  lastname: {
-    type: String,
-    default: 'default',
-    trim: true
-  },
-  licenseNo: {
-    type: String,
-    default: 'default',
-    trim: true
-  },
-  age: {
-    type: Number,
-    default: 0
-  },
-  dob: {
-    type: Date
-  },
-  username: {
-    type: String,
-    required: true,
-    unique: true,
-    trim: true
-  },
-  password: {
-    type: String,
-    required: true
-  },
-  userType: {
-    type: String,
-    enum: ['Driver', 'Examiner', 'Admin'],
-    default: 'Driver'
-  },
+  firstname: { type: String, default: 'default', trim: true },
+  lastname: { type: String, default: 'default', trim: true },
+  licenseNo: { type: String, default: 'default', trim: true },
+  age: { type: Number, default: 0 },
+  dob: { type: Date },
+  username: { type: String, required: true, unique: true, trim: true },
+  password: { type: String, required: true },
+  userType: { type: String, enum: ['Driver', 'Examiner', 'Admin'], default: 'Driver' },
+  appointment: { type: mongoose.Schema.Types.ObjectId, ref: 'Appointment' }, 
   car_details: {
-    make: {
-      type: String,
-      default: 'default',
-      trim: true
-    },
-    model: {
-      type: String,
-      default: 'default',
-      trim: true
-    },
-    year: {
-      type: Number,
-      default: 0
-    },
-    platno: {
-      type: String,
-      default: 'default',
-      trim: true
-    }
+    make: { type: String, default: 'default', trim: true },
+    model: { type: String, default: 'default', trim: true },
+    year: { type: Number, default: 0 },
+    platno: { type: String, default: 'default', trim: true }
   }
 });
 
-// Encrypt function
 function encrypt(text) {
   const iv = crypto.randomBytes(IV_LENGTH);
   const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY), iv);
@@ -76,7 +31,6 @@ function encrypt(text) {
   return iv.toString('hex') + ':' + encrypted.toString('hex');
 }
 
-// Decrypt function
 function decrypt(text) {
   const textParts = text.split(':');
   const iv = Buffer.from(textParts.shift(), 'hex');
@@ -87,18 +41,16 @@ function decrypt(text) {
   return decrypted.toString();
 }
 
-// Encrypt password and licenseNo before saving
 userSchema.pre('save', async function(next) {
   if (this.isModified('password')) {
-    this.password = await bcrypt.hash(this.password, 10); // for password
+    this.password = await bcrypt.hash(this.password, 10);
   }
   if (this.isModified('licenseNo') && this.licenseNo !== 'default') {
-    this.licenseNo = encrypt(this.licenseNo); // encryption for licenseNo
+    this.licenseNo = encrypt(this.licenseNo);
   }
   next();
 });
 
-// Method to decrypt licenseNo when fetching
 userSchema.methods.getDecryptedLicenseNo = function() {
   if (this.licenseNo !== 'default') {
     return decrypt(this.licenseNo);

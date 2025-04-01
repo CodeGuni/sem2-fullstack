@@ -19,12 +19,18 @@
       </a>
       <div class="navbar-nav ms-auto">
         <% if (user) { %>
-          <a class="nav-item nav-link" href="/g2">
-            <span class="material-icons">assignment</span> G2 Test
-          </a>
-          <a class="nav-item nav-link" href="/g">
-            <span class="material-icons">verified</span> G Test
-          </a>
+          <% if (user.userType === 'Driver') { %>
+            <a class="nav-item nav-link" href="/g2">
+              <span class="material-icons">assignment</span> G2 Test
+            </a>
+            <a class="nav-item nav-link" href="/g">
+              <span class="material-icons">verified</span> G Test
+            </a>
+          <% } else if (user.userType === 'Admin') { %>
+            <a class="nav-item nav-link" href="/appointments">
+              <span class="material-icons">schedule</span> Appointments
+            </a>
+          <% } %>
           <a class="nav-item nav-link" href="/logout">
             <span class="material-icons">logout</span> Logout
           </a>
