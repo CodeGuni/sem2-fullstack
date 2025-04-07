@@ -59,7 +59,7 @@ exports.postG2 = async (req, res) => {
         user: { ...user._doc, licenseNo: user.getDecryptedLicenseNo() },
         appointments,
         bookedAppointment,
-        message: 'All required fields  must be filled.'
+        message: 'All required fields (First Name, Last Name, License Number, Age, Date of Birth) must be filled.'
       });
     }
 
@@ -68,6 +68,7 @@ exports.postG2 = async (req, res) => {
     user.licenseNo = licenseNumber;
     user.age = parseInt(age, 10);
     user.dob = new Date(dob);
+    user.testType = 'G2'; 
     user.car_details = {
       make: req.body.carMake || user.car_details.make,
       model: req.body.carModel || user.car_details.model,
@@ -86,7 +87,7 @@ exports.postG2 = async (req, res) => {
       },
       appointments,
       bookedAppointment,
-      message: 'Information updated successfully!'
+      message: 'User information updated successfully!'
     });
   } catch (err) {
     console.error(err);
