@@ -73,7 +73,7 @@ app.post('/g/update', ensureAuthenticated, ensureDriver, gController.updateG);
 app.get('/appointments', ensureAuthenticated, ensureAdmin, appointmentController.getAppointments);
 app.post('/appointments', ensureAuthenticated, ensureAdmin, appointmentController.postAppointment);
 app.get('/appointments/available', ensureAuthenticated, ensureAdmin, appointmentController.getAvailableSlots);
-
+app.post('/g/book', ensureAuthenticated, ensureDriver, gController.bookGAppointment);
 app.use((req, res) => {
   res.status(404).render('404', { title: 'Page Not Found' });
 });
