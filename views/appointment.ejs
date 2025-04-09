@@ -1,106 +1,65 @@
 <% if (message) { %>
-  <div class="alert <%= message.includes('Error') ? 'alert-danger' : 'alert-success' %> alert-dismissible fade show">
-    <%= message %>
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-  </div>
-<% } %>
-
-<div class="card">
-<div class="card-header">Manage Appointment Slots</div>
-<div class="card-body">
-  <form method="POST" action="/appointments" id="appointmentForm">
-    <div class="mb-3">
-      <label for="date" class="form-label">Date</label>
-      <input type="date" class="form-control" id="date" name="date" value="<%= selectedDate %>" required>
+    <div class="alert <%= message.includes('Error') ? 'alert-danger' : 'alert-success' %> alert-dismissible fade show">
+      <%= message %>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
-    <div class="mb-3">
-      <label class="form-label">Time Slots</label>
-      <div class="d-flex flex-wrap gap-2" id="timeSlots">
-        <% ['9:00', '9:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00'].forEach(time => { %>
-          <button type="submit" name="time" value="<%= time %>" class="btn btn-outline-primary"
-            <%= appointments.some(a => a.time === time && a.date.toISOString().split('T')[0] === selectedDate) ? 'disabled' : '' %>>
-            <%= time %>
-          </button>
-        <% }) %>
-      </div>
-    </div>
-  </form>
-  <h5 class="mt-4">Existing Appointments</h5>
-  <ul class="list-group">
-    <% appointments.forEach(appointment => { %>
-      <li class="list-group-item">
-        <% 
-          const localDate = new Date(appointment.date);
-          const formattedDate = localDate.toLocaleDateString('en-US', { 
-            weekday: 'short', 
-            month: 'short', 
-            day: 'numeric', 
-            year: 'numeric' 
-          }); 
-        %>
-        <%= formattedDate %> - <%= appointment.time %>
-        (<%= appointment.isTimeSlotAvailable ? 'Available' : 'Booked' %>)
-      </li>
-    <% }) %>
-  </ul>
-</div>
-</div>
-
-<div class="card mt-4">
-<div class="card-header">Pass/Fail Candidates</div>
-<div class="card-body">
-  <h5>Candidates Evaluated</h5>
-  <% if (drivers && drivers.length > 0) { %>
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Test Type</th>
-          <th>Appointment</th>
-          <th>Result</th>
-          <th>Comment</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% drivers.forEach(driver => { %>
-          <tr>
-            <td><%= driver.firstname %> <%= driver.lastname %></td>
-            <td><%= driver.testType %></td>
-            <td>
-              <%= driver.appointment ? 
-                new Date(driver.appointment.date).toLocaleDateString('en-US', { 
-                  weekday: 'short', 
-                  month: 'short', 
-                  day: 'numeric', 
-                  year: 'numeric' 
-                }) + ' - ' + driver.appointment.time : 'N/A' %>
-            </td>
-            <td><%= driver.passFail ? 'Pass' : 'Fail' %></td>
-            <td><%= driver.comment || 'No comment' %></td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
-  <% } else { %>
-    <p>No candidates have been evaluated yet.</p>
   <% } %>
-</div>
-</div>
-
-<script>
-document.getElementById('date').addEventListener('change', async function() {
-  const selectedDate = this.value;
-  try {
-    const response = await fetch(`/appointments/available?date=${selectedDate}`);
-    const data = await response.json();
-    const bookedTimes = data.bookedTimes || [];
-    const timeSlots = document.querySelectorAll('#timeSlots button');
-    timeSlots.forEach(button => {
-      const time = button.value;
-      button.disabled = bookedTimes.includes(time);
+  
+  <div class="card">
+    <div class="card-header">Manage Appointment Slots</div>
+    <div class="card-body">
+      <form method="POST" action="/appointments" id="appointmentForm">
+        <div class="mb-3">
+          <label for="date" class="form-label">Date</label>
+          <input type="date" class="form-control" id="date" name="date" value="<%= selectedDate %>" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Time Slots</label>
+          <div class="d-flex flex-wrap gap-2" id="timeSlots">
+            <% ['9:00', '9:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00'].forEach(time => { %>
+              <button type="submit" name="time" value="<%= time %>" class="btn btn-outline-primary"
+                <%= appointments.some(a => a.time === time && a.date.toISOString().split('T')[0] === selectedDate) ? 'disabled' : '' %>>
+                <%= time %>
+              </button>
+            <% }) %>
+          </div>
+        </div>
+      </form>
+      <h5 class="mt-4">Existing Appointments</h5>
+      <ul class="list-group">
+        <% appointments.forEach(appointment => { %>
+          <li class="list-group-item">
+            <% 
+              const localDate = new Date(appointment.date);
+              const formattedDate = localDate.toLocaleDateString('en-US', { 
+                weekday: 'short', 
+                month: 'short', 
+                day: 'numeric', 
+                year: 'numeric' 
+              }); 
+            %>
+            <%= formattedDate %> - <%= appointment.time %>
+            (<%= appointment.isTimeSlotAvailable ? 'Available' : 'Booked' %>)
+          </li>
+        <% }) %>
+      </ul>
+    </div>
+  </div>
+  
+  <script>
+    document.getElementById('date').addEventListener('change', async function() {
+      const selectedDate = this.value;
+      try {
+        const response = await fetch(`/appointments/available?date=${selectedDate}`);
+        const data = await response.json();
+        const bookedTimes = data.bookedTimes || [];
+        const timeSlots = document.querySelectorAll('#timeSlots button');
+        timeSlots.forEach(button => {
+          const time = button.value;
+          button.disabled = bookedTimes.includes(time);
+        });
+      } catch (err) {
+        console.error('Error fetching available slots:', err);
+      }
     });
-  } catch (err) {
-    console.error('Error fetching available slots:', err);
-  }
-});
-</script>
+  </script>

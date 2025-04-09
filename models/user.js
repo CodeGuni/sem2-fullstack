@@ -14,16 +14,13 @@ const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true, trim: true },
   password: { type: String, required: true },
   userType: { type: String, enum: ['Driver', 'Examiner', 'Admin'], default: 'Driver' },
-  appointment: { type: mongoose.Schema.Types.ObjectId, ref: 'Appointment' },
+  appointment: { type: mongoose.Schema.Types.ObjectId, ref: 'Appointment' }, 
   car_details: {
     make: { type: String, default: 'default', trim: true },
     model: { type: String, default: 'default', trim: true },
     year: { type: Number, default: 0 },
-    platno: { type: String, default: 'default', trim: true } 
-  },
-  testType: { type: String, enum: ['G2', 'G'], default: null }, 
-  comment: { type: String, default: '' }, 
-  passFail: { type: Boolean, default: null } 
+    platno: { type: String, default: 'default', trim: true }
+  }
 });
 
 function encrypt(text) {
