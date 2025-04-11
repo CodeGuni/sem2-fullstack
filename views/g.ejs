@@ -1,3 +1,5 @@
+<% layout('layout/main') %>
+
 <% if (message) { %>
   <div class="alert <%= message.includes('Error') ? 'alert-danger' : 'alert-success' %> alert-dismissible fade show">
     <%= message %>
@@ -59,5 +61,105 @@
         </div>
       </div>
     </form>
+
+    <hr>
+    <h5>Book Appointment</h5>
+    <% if (bookedAppointment) { %>
+      <div class="alert alert-info">
+        You have already booked a slot:
+        <strong>
+          <%= new Date(bookedAppointment.date).toLocaleDateString('en-US', { 
+            weekday: 'short', 
+            month: 'short', 
+            day: 'numeric', 
+            year: 'numeric' 
+          }) %> - <%= bookedAppointment.time %>
+        </strong>
+      </div>
+      <h6>Reschedule Appointment</h6>
+      <form method="POST" action="/g/reschedule" class="needs-validation" novalidate>
+        <div class="mb-3">
+          <label for="appointmentDate" class="form-label">Select Date</label>
+          <input type="date" class="form-control" id="appointmentDate" name="appointmentDate" required>
+          <div class="invalid-feedback">Please select a date.</div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Available Slots</label>
+          <select class="form-control" name="appointmentId" id="appointmentSlots" required>
+            <option value="">Select a time slot</option>
+            <% appointments.forEach(appointment => { %>
+              <option value="<%= appointment._id %>">
+                <%= appointment.date.toDateString() %> - <%= appointment.time %>
+              </option>
+            <% }) %>
+          </select>
+          <div class="invalid-feedback">Please select an appointment slot.</div>
+        </div>
+        <button type="submit" class="btn btn-warning">Reschedule Appointment</button>
+      </form>
+    <% } else { %>
+      <div class="mb-3">
+        <label for="appointmentDate" class="form-label">Select Date</label>
+        <input type="date" class="form-control" id="appointmentDate" name="appointmentDate" required>
+        <div class="invalid-feedback">Please select a date.</div>
+      </div>
+      <form method="POST" action="/g/book" class="needs-validation" novalidate>
+        <div class="mb-3">
+          <label class="form-label">Available Slots</label>
+          <select class="form-control" name="appointmentId" id="appointmentSlots" required>
+            <option value="">Select a time slot</option>
+            <% appointments.forEach(appointment => { %>
+              <option value="<%= appointment._id %>">
+                <%= appointment.date.toDateString() %> - <%= appointment.time %>
+              </option>
+            <% }) %>
+          </select>
+          <div class="invalid-feedback">Please select an appointment slot.</div>
+        </div>
+        <button type="submit" class="btn btn-success">Book Appointment</button>
+      </form>
+    <% } %>
+
+    <% if (user.examinerComment || user.passFail !== null) { %>
+      <hr>
+      <h5>Test Results</h5>
+      <div class="card">
+        <div class="card-body">
+          <p><strong>Examiner Comment:</strong> <%= user.examinerComment || 'No comment provided' %></p>
+          <p><strong>Result:</strong> <%= user.passFail === true ? 'Pass' : user.passFail === false ? 'Fail' : 'Not evaluated' %></p>
+        </div>
+      </div>
+    <% } %>
   </div>
 </div>
+
+<script>
+  document.getElementById('appointmentDate').addEventListener('change', async function() {
+    const selectedDate = this.value;
+    if (!selectedDate) return;
+
+    try {
+      const response = await fetch(`/g/available-slots?date=${selectedDate}`);
+      const availableSlots = await response.json();
+      const select = document.getElementById('appointmentSlots');
+      select.innerHTML = '<option value="">Select a time slot</option>';
+      if (availableSlots.length > 0) {
+        availableSlots.forEach(slot => {
+          const option = document.createElement('option');
+          option.value = slot._id;
+          option.text = `${new Date(slot.date).toDateString()} - ${slot.time}`;
+          select.appendChild(option);
+        });
+      } else {
+        const option = document.createElement('option');
+        option.value = '';
+        option.text = 'No available slots for this date';
+        select.appendChild(option);
+      }
+    } catch (err) {
+      console.error('Error fetching available slots:', err);
+      const select = document.getElementById('appointmentSlots');
+      select.innerHTML = '<option value="">Error loading slots</option>';
+    }
+  });
+</script>
