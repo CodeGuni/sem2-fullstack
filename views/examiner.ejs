@@ -1,0 +1,80 @@
+<% layout('layout/main') %>
+
+<% if (message) { %>
+  <div class="alert <%= message.includes('Error') ? 'alert-danger' : 'alert-success' %> alert-dismissible fade show">
+    <%= message %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+<% } %>
+
+<div class="card">
+  <div class="card-header">Examiner Dashboard</div>
+  <div class="card-body">
+    <h5>Filter Appointments</h5>
+    <form method="GET" action="/examiner" class="mb-4">
+      <div class="mb-3">
+        <label for="testType" class="form-label">Test Type</label>
+        <select class="form-control" id="testType" name="testType">
+          <option value="all" <%= filter === 'all' ? 'selected' : '' %>>All</option>
+          <option value="G2" <%= filter === 'G2' ? 'selected' : '' %>>G2</option>
+          <option value="G" <%= filter === 'G' ? 'selected' : '' %>>G</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">Apply Filter</button>
+    </form>
+
+    <h5>Drivers with Appointments</h5>
+    <% if (drivers.length > 0) { %>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Test Type</th>
+            <th>Appointment</th>
+            <th>Car Details</th>
+            <th>Status</th>
+            <th>Comment</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% drivers.forEach(driver => { %>
+            <tr>
+              <td><%= driver.firstname %> <%= driver.lastname %></td>
+              <td><%= driver.testType || 'Not specified' %></td>
+              <td>
+                <%= driver.appointment ? new Date(driver.appointment.date).toLocaleDateString('en-US', { 
+                  weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' 
+                }) + ' - ' + driver.appointment.time : 'No appointment' %>
+              </td>
+              <td>
+                <%= driver.car_details.make %> <%= driver.car_details.model %> (<%= driver.car_details.year %>)<br>
+                Plate: <%= driver.car_details.platno %>
+              </td>
+              <td><%= driver.passFail === true ? 'Pass' : driver.passFail === false ? 'Fail' : 'Not evaluated' %></td>
+              <td><%= driver.examinerComment || 'No comment' %></td>
+              <td>
+                <form method="POST" action="/examiner" class="needs-validation" novalidate>
+                  <input type="hidden" name="driverId" value="<%= driver._id %>">
+                  <div class="mb-2">
+                    <textarea class="form-control" name="comment" placeholder="Add comment"><%= driver.examinerComment %></textarea>
+                  </div>
+                  <div class="mb-2">
+                    <select class="form-control" name="passFail" required>
+                      <option value="" <%= driver.passFail === null ? 'selected' : '' %>>Select Result</option>
+                      <option value="true" <%= driver.passFail === true ? 'selected' : '' %>>Pass</option>
+                      <option value="false" <%= driver.passFail === false ? 'selected' : '' %>>Fail</option>
+                    </select>
+                  </div>
+                  <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } else { %>
+      <p>No drivers with appointments found.</p>
+    <% } %>
+  </div>
+</div>
