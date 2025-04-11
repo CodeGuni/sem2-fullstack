@@ -30,6 +30,13 @@
             <a class="nav-item nav-link" href="/appointments">
               <span class="material-icons">schedule</span> Appointments
             </a>
+            <a class="nav-item nav-link" href="/admin-results">
+              <span class="material-icons">list</span> Results
+            </a>
+          <% } else if (user.userType === 'Examiner') { %>
+            <a class="nav-item nav-link" href="/examiner">
+              <span class="material-icons">person</span> Examiner Dashboard
+            </a>
           <% } %>
           <a class="nav-item nav-link" href="/logout">
             <span class="material-icons">logout</span> Logout
