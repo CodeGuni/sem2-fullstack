@@ -44,35 +44,63 @@ const ensureAdmin = (req, res, next) => {
   res.status(403).render('error', { title: 'Forbidden', message: 'Access restricted to Admins only' });
 };
 
+const ensureExaminer = (req, res, next) => {
+  if (req.session.user && req.session.user.userType === 'Examiner') return next();
+  res.status(403).render('error', { title: 'Forbidden', message: 'Access restricted to Examiners only' });
+};
+
 const homeController = require('./controllers/homeController');
 const authController = require('./controllers/authController');
 const g2Controller = require('./controllers/g2Controller');
 const gController = require('./controllers/gController');
 const appointmentController = require('./controllers/appointmentController');
-
-/*
-console.log('homeController:', homeController);
-console.log('authController:', authController);
-console.log('g2Controller:', g2Controller);
-console.log('gController:', gController);
-console.log('appointmentController:', appointmentController);
-*/
+const examinerController = require('./controllers/examinerController');
 
 app.get('/', homeController.getHome);
 app.get('/login', authController.getLogin);
 app.post('/login', authController.postLogin);
 app.post('/signup', authController.postSignup);
 app.get('/logout', authController.logout);
+
+// Driver routes
 app.get('/g2', ensureAuthenticated, ensureDriver, g2Controller.getG2);
 app.post('/g2', ensureAuthenticated, ensureDriver, g2Controller.postG2);
 app.get('/g2/available-slots', ensureAuthenticated, ensureDriver, g2Controller.getAvailableSlots);
-app.post('/g2/book', ensureAuthenticated, ensureDriver, appointmentController.bookAppointment);
-app.post('/g2/reschedule', ensureAuthenticated, ensureDriver, appointmentController.rescheduleAppointment); 
+app.post('/g2/book', ensureAuthenticated, ensureDriver, g2Controller.bookAppointment);
+app.post('/g2/reschedule', ensureAuthenticated, ensureDriver, appointmentController.rescheduleAppointment);
 app.get('/g', ensureAuthenticated, ensureDriver, gController.getG);
 app.post('/g/update', ensureAuthenticated, ensureDriver, gController.updateG);
+app.get('/g/available-slots', ensureAuthenticated, ensureDriver, gController.getAvailableSlots);
+app.post('/g/book', ensureAuthenticated, ensureDriver, gController.bookAppointment);
+app.post('/g/reschedule', ensureAuthenticated, ensureDriver, appointmentController.rescheduleAppointment);
+
+// Admin routes
 app.get('/appointments', ensureAuthenticated, ensureAdmin, appointmentController.getAppointments);
 app.post('/appointments', ensureAuthenticated, ensureAdmin, appointmentController.postAppointment);
 app.get('/appointments/available', ensureAuthenticated, ensureAdmin, appointmentController.getAvailableSlots);
+app.get('/admin-results', ensureAuthenticated, ensureAdmin, async (req, res) => {
+  try {
+    const drivers = await require('./models/user').find({
+      userType: 'Driver',
+      passFail: { $ne: null }
+    });
+    res.render('admin-results', {
+      title: 'Test Results',
+      drivers,
+      message: null
+    });
+  } catch (err) {
+    res.render('admin-results', {
+      title: 'Test Results',
+      drivers: [],
+      message: 'Error fetching results: ' + err.message
+    });
+  }
+});
+
+// Examiner routes
+app.get('/examiner', ensureAuthenticated, ensureExaminer, examinerController.getExaminer);
+app.post('/examiner', ensureAuthenticated, ensureExaminer, examinerController.postExaminer);
 
 app.use((req, res) => {
   res.status(404).render('404', { title: 'Page Not Found' });
