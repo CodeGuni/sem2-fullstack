@@ -1,3 +1,5 @@
+<% layout('layout/main') %>
+
 <% if (message) { %>
   <div class="alert <%= message.includes('Error') ? 'alert-danger' : 'alert-success' %> alert-dismissible fade show">
     <%= message %>
@@ -122,6 +124,17 @@
     </div>
     <button type="submit" class="btn btn-success">Book Appointment</button>
   </form>
+<% } %>
+
+<% if (user.examinerComment || user.passFail !== null) { %>
+  <hr>
+  <h5>Test Results</h5>
+  <div class="card">
+    <div class="card-body">
+      <p><strong>Examiner Comment:</strong> <%= user.examinerComment || 'No comment provided' %></p>
+      <p><strong>Result:</strong> <%= user.passFail === true ? 'Pass' : user.passFail === false ? 'Fail' : 'Not evaluated' %></p>
+    </div>
+  </div>
 <% } %>
 
 <script>
