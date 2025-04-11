@@ -59,7 +59,7 @@ exports.postG2 = async (req, res) => {
         user: { ...user._doc, licenseNo: user.getDecryptedLicenseNo() },
         appointments,
         bookedAppointment,
-        message: 'All required fields  must be filled.'
+        message: 'All required fields must be filled.'
       });
     }
 
@@ -115,6 +115,65 @@ exports.getAvailableSlots = async (req, res) => {
     res.json(availableSlots);
   } catch (err) {
     res.status(500).json({ error: 'Error fetching available slots' });
+  }
+};
+
+exports.bookAppointment = async (req, res) => {
+  const { appointmentId } = req.body;
+  try {
+    const user = await User.findById(req.session.user._id).populate('appointment');
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    if (
+      user.firstname === 'default' ||
+      user.lastname === 'default' ||
+      user.licenseNo === 'default' ||
+      user.age === 0 ||
+      !user.dob
+    ) {
+      const appointments = await Appointment.find({ isTimeSlotAvailable: true });
+      const bookedAppointment = user.appointment || null;
+      return res.render('g2', {
+        title: 'G2 License',
+        user: { ...user._doc, licenseNo: user.getDecryptedLicenseNo() },
+        appointments,
+        bookedAppointment,
+        message: 'Please update your information before booking an appointment.'
+      });
+    }
+
+    const appointment = await Appointment.findById(appointmentId);
+    if (!appointment || !appointment.isTimeSlotAvailable) {
+      throw new Error('Appointment not available');
+    }
+
+    user.appointment = appointmentId;
+    user.testType = 'G2';
+    appointment.isTimeSlotAvailable = false;
+
+    await Promise.all([user.save(), appointment.save()]);
+    const appointments = await Appointment.find({ isTimeSlotAvailable: true });
+    const bookedAppointment = appointment;
+    res.render('g2', {
+      title: 'G2 License',
+      user: { ...user._doc, licenseNo: user.getDecryptedLicenseNo() },
+      appointments,
+      bookedAppointment,
+      message: 'Appointment booked successfully!'
+    });
+  } catch (err) {
+    const user = await User.findById(req.session.user._id).populate('appointment');
+    const appointments = await Appointment.find({ isTimeSlotAvailable: true });
+    const bookedAppointment = user ? user.appointment || null : null;
+    res.render('g2', {
+      title: 'G2 License',
+      user: user ? { ...user._doc, licenseNo: user.getDecryptedLicenseNo() } : null,
+      appointments,
+      bookedAppointment,
+      message: 'Error booking appointment: ' + err.message
+    });
   }
 };
 
