@@ -14,7 +14,10 @@ const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true, trim: true },
   password: { type: String, required: true },
   userType: { type: String, enum: ['Driver', 'Examiner', 'Admin'], default: 'Driver' },
-  appointment: { type: mongoose.Schema.Types.ObjectId, ref: 'Appointment' }, 
+  appointment: { type: mongoose.Schema.Types.ObjectId, ref: 'Appointment' },
+  testType: { type: String, enum: ['G2', 'G'], default: null },
+  examinerComment: { type: String, default: '' },
+  passFail: { type: Boolean, default: null },
   car_details: {
     make: { type: String, default: 'default', trim: true },
     model: { type: String, default: 'default', trim: true },
