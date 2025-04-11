@@ -16,6 +16,8 @@ exports.postLogin = async (req, res) => {
 
     if (user.userType === 'Admin') {
       res.redirect('/appointments');
+    } else if (user.userType === 'Examiner') {
+      res.redirect('/examiner');
     } else {
       res.redirect('/g2');
     }
@@ -32,6 +34,9 @@ exports.postSignup = async (req, res) => {
   if (password !== confirmPassword) {
     return res.render('login', { title: 'Login', message: 'Passwords do not match' });
   }
+  if (!['Driver', 'Examiner', 'Admin'].includes(userType)) {
+    return res.render('login', { title: 'Login', message: 'Invalid user type' });
+  }
   try {
     const existingUser = await User.findOne({ username });
     if (existingUser) {
@@ -42,6 +47,8 @@ exports.postSignup = async (req, res) => {
     req.session.user = { _id: user._id, userType: user.userType };
     if (user.userType === 'Admin') {
       res.redirect('/appointments');
+    } else if (user.userType === 'Examiner') {
+      res.redirect('/examiner');
     } else {
       res.redirect('/g2');
     }
