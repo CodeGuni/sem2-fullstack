@@ -1,3 +1,9 @@
+/*
+ * File: appointmentController.js
+ * Author: Gunpreet Singh
+ * Student ID: 9022194
+ * Purpose: Handles admin appointment management, including creating and viewing time slots.
+ */
 const Appointment = require('../models/appointment');
 const User = require('../models/user');
 

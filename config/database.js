@@ -1,3 +1,9 @@
+/*
+ * File: database.js
+ * Author: Gunpreet Singh
+ * Student ID: 9022194
+ * Purpose: Configures and connects to the MongoDB database using Mongoose.
+ */
 const mongoose = require('mongoose');
 
 const connectDB = async () => {

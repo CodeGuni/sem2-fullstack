@@ -1,3 +1,9 @@
+/*
+ * File: g2Controller.js
+ * Author: Gunpreet Singh
+ * Student ID: 9022194
+ * Purpose: Manages G2 test page functionality, including user info updates and appointment booking.
+ */
 const User = require('../models/user');
 const Appointment = require('../models/appointment');
 

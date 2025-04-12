@@ -1,4 +1,10 @@
-body {
+/*
+ * File: styles.css
+ * Author: Gunpreet Singh
+ * Student ID: 9022194
+ * Purpose: Contains custom CSS styles for the application's UI.
+ */
+ body {
     font-family: 'Roboto', sans-serif;
     background-color: #f5f5f5;
 }

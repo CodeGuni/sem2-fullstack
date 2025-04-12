@@ -1,3 +1,9 @@
+/*
+ * File: app.js
+ * Author: Gunpreet Singh
+ * Student ID: 9022194
+ * Purpose: Main Express application setup, including middleware, routes, and server configuration.
+ */
 require('dotenv').config();
 const express = require('express');
 const path = require('path');

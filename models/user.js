@@ -1,3 +1,9 @@
+/*
+ * File: user.js
+ * Author: Gunpreet Singh
+ * Student ID: 9022194
+ * Purpose: Defines the User Mongoose schema and model with encryption for sensitive data.
+ */
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');

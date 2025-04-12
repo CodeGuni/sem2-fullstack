@@ -1,3 +1,9 @@
+/*
+ * File: appointment.js
+ * Author: Gunpreet Singh
+ * Student ID: 9022194
+ * Purpose: Defines the Appointment Mongoose schema and model for managing time slots.
+ */
 const mongoose = require('mongoose');
 
 const appointmentSchema = new mongoose.Schema({

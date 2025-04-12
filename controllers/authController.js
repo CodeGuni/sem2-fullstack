@@ -1,3 +1,9 @@
+/*
+ * File: authController.js
+ * Author: Gunpreet Singh
+ * Student ID: 9022194
+ * Purpose: Handles authentication routes for login, signup, and logout.
+ */
 const User = require('../models/user');
 const bcrypt = require('bcryptjs');
 

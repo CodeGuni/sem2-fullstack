@@ -1,4 +1,10 @@
-<% if (message) { %>
+/*
+ * File: g.ejs
+ * Author: Gunpreet Singh
+ * Student ID: 9022194
+ * Purpose: Renders the G test page for drivers to update car info, book appointments, and view results.
+ */ 
+ <% if (message) { %>
   <div class="alert <%= message.includes('Error') ? 'alert-danger' : 'alert-success' %> alert-dismissible fade show">
     <%= message %>
     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>

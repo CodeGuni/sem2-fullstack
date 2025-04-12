@@ -1,3 +1,9 @@
+/*
+ * File: examinerController.js
+ * Author: Gunpreet Singh
+ * Student ID: 9022194
+ * Purpose: Manages examiner dashboard for viewing appointments, adding comments, and marking pass/fail.
+ */
 const User = require('../models/user');
 const Appointment = require('../models/appointment');
 

@@ -1,3 +1,9 @@
+/*
+ * File: gController.js
+ * Author: Gunpreet Singh
+ * Student ID: 9022194
+ * Purpose: Manages G test page functionality, including car info updates and appointment booking.
+ */
 const User = require('../models/user');
 const Appointment = require('../models/appointment');
 
