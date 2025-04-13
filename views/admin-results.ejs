@@ -5,41 +5,52 @@
  * Purpose: Renders the admin view for listing drivers with pass/fail test results.
  */ %>
  <% if (message) { %>
-    <div class="alert <%= message.includes('Error') ? 'alert-danger' : 'alert-success' %> alert-dismissible fade show">
-      <%= message %>
-      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-  <% } %>
-  
-  <div class="card">
-    <div class="card-header">Test Results</div>
-    <div class="card-body">
-      <h5>Drivers with Test Results</h5>
-      <% if (drivers.length > 0) { %>
-        <table class="table table-striped">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Test Type</th>
-              <th>License Number</th>
-              <th>Result</th>
-              <th>Comment</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% drivers.forEach(driver => { %>
-              <tr>
-                <td><%= driver.firstname %> <%= driver.lastname %></td>
-                <td><%= driver.testType || 'Not specified' %></td>
-                <td><%= driver.getDecryptedLicenseNo() %></td>
-                <td><%= driver.passFail === true ? 'Pass' : driver.passFail === false ? 'Fail' : 'Not evaluated' %></td>
-                <td><%= driver.examinerComment || 'No comment' %></td>
-              </tr>
-            <% }) %>
-          </tbody>
-        </table>
-      <% } else { %>
-        <p>No test results available.</p>
-      <% } %>
-    </div>
+  <div class="alert <%= message.includes('Error') ? 'alert-danger' : 'alert-success' %> alert-dismissible fade show">
+    <%= message %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
   </div>
+<% } %>
+
+<div class="card">
+<div class="card-header">Test Results</div>
+<div class="card-body">
+  <h5>Drivers with Test Results</h5>
+  <% if (drivers.length > 0) { %>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Test Type</th>
+          <th>License Number</th>
+          <th>Result</th>
+          <th>Comment</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% drivers.forEach(driver => { %>
+          <% if (driver.g2TestResult.passFail !== null) { %>
+            <tr>
+              <td><%= driver.firstname %> <%= driver.lastname %></td>
+              <td>G2</td>
+              <td><%= driver.getDecryptedLicenseNo() %></td>
+              <td><%= driver.g2TestResult.passFail === true ? 'Pass' : 'Fail' %></td>
+              <td><%= driver.g2TestResult.examinerComment || 'No comment' %></td>
+            </tr>
+          <% } %>
+          <% if (driver.gTestResult.passFail !== null) { %>
+            <tr>
+              <td><%= driver.firstname %> <%= driver.lastname %></td>
+              <td>G</td>
+              <td><%= driver.getDecryptedLicenseNo() %></td>
+              <td><%= driver.gTestResult.passFail === true ? 'Pass' : 'Fail' %></td>
+              <td><%= driver.gTestResult.examinerComment || 'No comment' %></td>
+            </tr>
+          <% } %>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } else { %>
+    <p>No test results available.</p>
+  <% } %>
+</div>
+</div>

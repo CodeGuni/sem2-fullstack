@@ -9,7 +9,7 @@ const Appointment = require('../models/appointment');
 
 exports.getG2 = async (req, res) => {
   try {
-    const user = await User.findById(req.session.user._id).populate('appointment');
+    const user = await User.findById(req.session.user._id).populate('g2Appointment');
     const appointments = await Appointment.find({ isTimeSlotAvailable: true });
     if (!user) {
       return res.render('g2', {
@@ -20,7 +20,7 @@ exports.getG2 = async (req, res) => {
         message: 'User not found'
       });
     }
-    const bookedAppointment = user.appointment || null;
+    const bookedAppointment = user.g2Appointment || null;
     res.render('g2', {
       title: 'G2 License',
       user: {
@@ -45,7 +45,7 @@ exports.getG2 = async (req, res) => {
 
 exports.postG2 = async (req, res) => {
   try {
-    const user = await User.findById(req.session.user._id).populate('appointment');
+    const user = await User.findById(req.session.user._id).populate('g2Appointment');
     if (!user) {
       return res.render('g2', {
         title: 'G2 License',
@@ -56,10 +56,12 @@ exports.postG2 = async (req, res) => {
       });
     }
 
-    const { firstName, lastName, licenseNumber, age, dob } = req.body;
-    if (!firstName || !lastName || !licenseNumber || !age || !dob) {
+    const { firstName, lastName, licenseNumber, dob, carMake, carModel, carYear, platNumber } = req.body;
+
+    // Validate required fields
+    if (!firstName || !lastName || !licenseNumber || !dob) {
       const appointments = await Appointment.find({ isTimeSlotAvailable: true });
-      const bookedAppointment = user.appointment || null;
+      const bookedAppointment = user.g2Appointment || null;
       return res.render('g2', {
         title: 'G2 License',
         user: { ...user._doc, licenseNo: user.getDecryptedLicenseNo() },
@@ -69,21 +71,43 @@ exports.postG2 = async (req, res) => {
       });
     }
 
+    // Server-side age validation
+    const dobDate = new Date(dob);
+    const today = new Date();
+    let calculatedAge = today.getFullYear() - dobDate.getFullYear();
+    const monthDiff = today.getMonth() - dobDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dobDate.getDate())) {
+      calculatedAge--;
+    }
+
+    if (calculatedAge < 16) {
+      const appointments = await Appointment.find({ isTimeSlotAvailable: true });
+      const bookedAppointment = user.g2Appointment || null;
+      return res.render('g2', {
+        title: 'G2 License',
+        user: { ...user._doc, licenseNo: user.getDecryptedLicenseNo() },
+        appointments,
+        bookedAppointment,
+        message: 'You must be at least 16 years old to update your information.'
+      });
+    }
+
+    // Update user information
     user.firstname = firstName;
     user.lastname = lastName;
     user.licenseNo = licenseNumber;
-    user.age = parseInt(age, 10);
-    user.dob = new Date(dob);
+    user.age = calculatedAge;
+    user.dob = dobDate;
     user.car_details = {
-      make: req.body.carMake || user.car_details.make,
-      model: req.body.carModel || user.car_details.model,
-      year: req.body.carYear ? parseInt(req.body.carYear, 10) : user.car_details.year,
-      platno: req.body.platNumber || user.car_details.platno
+      make: carMake || user.car_details.make,
+      model: carModel || user.car_details.model,
+      year: carYear ? parseInt(carYear, 10) : user.car_details.year,
+      platno: platNumber || user.car_details.platno
     };
 
     await user.save();
     const appointments = await Appointment.find({ isTimeSlotAvailable: true });
-    const bookedAppointment = user.appointment || null;
+    const bookedAppointment = user.g2Appointment || null;
     res.render('g2', {
       title: 'G2 License',
       user: {
@@ -96,9 +120,9 @@ exports.postG2 = async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    const user = await User.findById(req.session.user._id).populate('appointment');
+    const user = await User.findById(req.session.user._id).populate('g2Appointment');
     const appointments = await Appointment.find({ isTimeSlotAvailable: true });
-    const bookedAppointment = user ? user.appointment || null : null;
+    const bookedAppointment = user ? user.g2Appointment || null : null;
     res.render('g2', {
       title: 'G2 License',
       user: user ? { ...user._doc, licenseNo: user.getDecryptedLicenseNo() } : null,
@@ -126,61 +150,8 @@ exports.getAvailableSlots = async (req, res) => {
 
 exports.bookAppointment = async (req, res) => {
   const { appointmentId } = req.body;
-  try {
-    const user = await User.findById(req.session.user._id).populate('appointment');
-    if (!user) {
-      throw new Error('User not found');
-    }
-
-    if (
-      user.firstname === 'default' ||
-      user.lastname === 'default' ||
-      user.licenseNo === 'default' ||
-      user.age === 0 ||
-      !user.dob
-    ) {
-      const appointments = await Appointment.find({ isTimeSlotAvailable: true });
-      const bookedAppointment = user.appointment || null;
-      return res.render('g2', {
-        title: 'G2 License',
-        user: { ...user._doc, licenseNo: user.getDecryptedLicenseNo() },
-        appointments,
-        bookedAppointment,
-        message: 'Please update your information before booking an appointment.'
-      });
-    }
-
-    const appointment = await Appointment.findById(appointmentId);
-    if (!appointment || !appointment.isTimeSlotAvailable) {
-      throw new Error('Appointment not available');
-    }
-
-    user.appointment = appointmentId;
-    user.testType = 'G2';
-    appointment.isTimeSlotAvailable = false;
-
-    await Promise.all([user.save(), appointment.save()]);
-    const appointments = await Appointment.find({ isTimeSlotAvailable: true });
-    const bookedAppointment = appointment;
-    res.render('g2', {
-      title: 'G2 License',
-      user: { ...user._doc, licenseNo: user.getDecryptedLicenseNo() },
-      appointments,
-      bookedAppointment,
-      message: 'Appointment booked successfully!'
-    });
-  } catch (err) {
-    const user = await User.findById(req.session.user._id).populate('appointment');
-    const appointments = await Appointment.find({ isTimeSlotAvailable: true });
-    const bookedAppointment = user ? user.appointment || null : null;
-    res.render('g2', {
-      title: 'G2 License',
-      user: user ? { ...user._doc, licenseNo: user.getDecryptedLicenseNo() } : null,
-      appointments,
-      bookedAppointment,
-      message: 'Error booking appointment: ' + err.message
-    });
-  }
+  req.body.testType = 'G2';
+  return require('./appointmentController').bookAppointment(req, res);
 };
 
 module.exports = exports;

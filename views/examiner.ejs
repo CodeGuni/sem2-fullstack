@@ -4,7 +4,7 @@
  * Student ID: 9022194
  * Purpose: Renders the examiner dashboard for managing driver appointments and test evaluations.
  */ %>
-<% if (message) { %>
+ <% if (message) { %>
   <div class="alert <%= message.includes('Error') ? 'alert-danger' : 'alert-success' %> alert-dismissible fade show">
     <%= message %>
     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -45,11 +45,15 @@
           <% drivers.forEach(driver => { %>
             <tr>
               <td><%= driver.firstname %> <%= driver.lastname %></td>
-              <td><%= driver.testType || 'Not specified' %></td>
+              <td><%= driver.testType || 'Unknown' %></td>
               <td>
-                <%= driver.appointment ? new Date(driver.appointment.date).toLocaleDateString('en-US', { 
-                  weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' 
-                }) + ' - ' + driver.appointment.time : 'No appointment' %>
+                <% if (driver.appointment) { %>
+                  <%= new Date(driver.appointment.date).toLocaleDateString('en-US', { 
+                    weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' 
+                  }) %> - <%= driver.appointment.time %>
+                <% } else { %>
+                  No appointment
+                <% } %>
               </td>
               <td>
                 <%= driver.car_details.make %> <%= driver.car_details.model %> (<%= driver.car_details.year %>)<br>
@@ -60,8 +64,9 @@
               <td>
                 <form method="POST" action="/examiner" class="needs-validation" novalidate>
                   <input type="hidden" name="driverId" value="<%= driver._id %>">
+                  <input type="hidden" name="testType" value="<%= driver.testType %>">
                   <div class="mb-2">
-                    <textarea class="form-control" name="comment" placeholder="Add comment"><%= driver.examinerComment %></textarea>
+                    <textarea class="form-control" name="comment" placeholder="Add comment"><%= driver.examinerComment || '' %></textarea>
                   </div>
                   <div class="mb-2">
                     <select class="form-control" name="passFail" required>

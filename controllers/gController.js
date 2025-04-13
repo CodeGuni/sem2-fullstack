@@ -9,7 +9,7 @@ const Appointment = require('../models/appointment');
 
 exports.getG = async (req, res) => {
   try {
-    const user = await User.findById(req.session.user._id).populate('appointment');
+    const user = await User.findById(req.session.user._id).populate('gAppointment');
     const appointments = await Appointment.find({ isTimeSlotAvailable: true });
     if (!user) {
       return res.render('g', {
@@ -20,7 +20,7 @@ exports.getG = async (req, res) => {
         message: 'User not found'
       });
     }
-    const bookedAppointment = user.appointment || null;
+    const bookedAppointment = user.gAppointment || null;
     res.render('g', {
       title: 'G License',
       user: {
@@ -45,7 +45,7 @@ exports.getG = async (req, res) => {
 
 exports.updateG = async (req, res) => {
   try {
-    const user = await User.findById(req.session.user._id).populate('appointment');
+    const user = await User.findById(req.session.user._id).populate('gAppointment');
     if (!user) {
       return res.render('g', {
         title: 'G License',
@@ -65,7 +65,7 @@ exports.updateG = async (req, res) => {
 
     await user.save();
     const appointments = await Appointment.find({ isTimeSlotAvailable: true });
-    const bookedAppointment = user.appointment || null;
+    const bookedAppointment = user.gAppointment || null;
     res.render('g', {
       title: 'G License',
       user: {
@@ -78,9 +78,9 @@ exports.updateG = async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    const user = await User.findById(req.session.user._id).populate('appointment');
+    const user = await User.findById(req.session.user._id).populate('gAppointment');
     const appointments = await Appointment.find({ isTimeSlotAvailable: true });
-    const bookedAppointment = user ? user.appointment || null : null;
+    const bookedAppointment = user ? user.gAppointment || null : null;
     res.render('g', {
       title: 'G License',
       user: user ? { ...user._doc, licenseNo: user.getDecryptedLicenseNo() } : null,
@@ -93,61 +93,8 @@ exports.updateG = async (req, res) => {
 
 exports.bookAppointment = async (req, res) => {
   const { appointmentId } = req.body;
-  try {
-    const user = await User.findById(req.session.user._id).populate('appointment');
-    if (!user) {
-      throw new Error('User not found');
-    }
-
-    if (
-      user.firstname === 'default' ||
-      user.lastname === 'default' ||
-      user.licenseNo === 'default' ||
-      user.age === 0 ||
-      !user.dob
-    ) {
-      const appointments = await Appointment.find({ isTimeSlotAvailable: true });
-      const bookedAppointment = user.appointment || null;
-      return res.render('g', {
-        title: 'G License',
-        user: { ...user._doc, licenseNo: user.getDecryptedLicenseNo() },
-        appointments,
-        bookedAppointment,
-        message: 'Please update your information in G2 page before booking.'
-      });
-    }
-
-    const appointment = await Appointment.findById(appointmentId);
-    if (!appointment || !appointment.isTimeSlotAvailable) {
-      throw new Error('Appointment not available');
-    }
-
-    user.appointment = appointmentId;
-    user.testType = 'G';
-    appointment.isTimeSlotAvailable = false;
-
-    await Promise.all([user.save(), appointment.save()]);
-    const appointments = await Appointment.find({ isTimeSlotAvailable: true });
-    const bookedAppointment = appointment;
-    res.render('g', {
-      title: 'G License',
-      user: { ...user._doc, licenseNo: user.getDecryptedLicenseNo() },
-      appointments,
-      bookedAppointment,
-      message: 'Appointment booked successfully!'
-    });
-  } catch (err) {
-    const user = await User.findById(req.session.user._id).populate('appointment');
-    const appointments = await Appointment.find({ isTimeSlotAvailable: true });
-    const bookedAppointment = user ? user.appointment || null : null;
-    res.render('g', {
-      title: 'G License',
-      user: user ? { ...user._doc, licenseNo: user.getDecryptedLicenseNo() } : null,
-      appointments,
-      bookedAppointment,
-      message: 'Error booking appointment: ' + err.message
-    });
-  }
+  req.body.testType = 'G'; // Set testType for appointmentController
+  return require('./appointmentController').bookAppointment(req, res);
 };
 
 exports.getAvailableSlots = async (req, res) => {

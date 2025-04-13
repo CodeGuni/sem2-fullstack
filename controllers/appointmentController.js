@@ -67,9 +67,9 @@ exports.getAvailableSlots = async (req, res) => {
 };
 
 exports.bookAppointment = async (req, res) => {
-  const { appointmentId } = req.body;
+  const { appointmentId, testType } = req.body; // Add testType to distinguish G2 or G
   try {
-    const user = await User.findById(req.session.user._id).populate('appointment');
+    const user = await User.findById(req.session.user._id).populate(testType === 'G2' ? 'g2Appointment' : 'gAppointment');
     if (!user) {
       throw new Error('User not found');
     }
@@ -82,9 +82,9 @@ exports.bookAppointment = async (req, res) => {
       !user.dob
     ) {
       const appointments = await Appointment.find({ isTimeSlotAvailable: true });
-      const bookedAppointment = user.appointment || null;
-      return res.render('g2', {
-        title: 'G2 License',
+      const bookedAppointment = testType === 'G2' ? user.g2Appointment : user.gAppointment;
+      return res.render(testType.toLowerCase(), {
+        title: `${testType} License`,
         user: { ...user._doc, licenseNo: user.getDecryptedLicenseNo() },
         appointments,
         bookedAppointment,
@@ -97,25 +97,31 @@ exports.bookAppointment = async (req, res) => {
       throw new Error('Appointment not available');
     }
 
-    user.appointment = appointmentId;
+    if (testType === 'G2') {
+      user.g2Appointment = appointmentId;
+    } else if (testType === 'G') {
+      user.gAppointment = appointmentId;
+    } else {
+      throw new Error('Invalid test type');
+    }
     appointment.isTimeSlotAvailable = false;
 
     await Promise.all([user.save(), appointment.save()]);
     const appointments = await Appointment.find({ isTimeSlotAvailable: true });
     const bookedAppointment = appointment;
-    res.render('g2', {
-      title: 'G2 License',
+    res.render(testType.toLowerCase(), {
+      title: `${testType} License`,
       user: { ...user._doc, licenseNo: user.getDecryptedLicenseNo() },
       appointments,
       bookedAppointment,
       message: 'Appointment booked successfully!'
     });
   } catch (err) {
-    const user = await User.findById(req.session.user._id).populate('appointment');
+    const user = await User.findById(req.session.user._id).populate(testType === 'G2' ? 'g2Appointment' : 'gAppointment');
     const appointments = await Appointment.find({ isTimeSlotAvailable: true });
-    const bookedAppointment = user ? user.appointment || null : null;
-    res.render('g2', {
-      title: 'G2 License',
+    const bookedAppointment = user ? (testType === 'G2' ? user.g2Appointment : user.gAppointment) : null;
+    res.render(testType.toLowerCase(), {
+      title: `${testType} License`,
       user: user ? { ...user._doc, licenseNo: user.getDecryptedLicenseNo() } : null,
       appointments,
       bookedAppointment,
@@ -125,9 +131,9 @@ exports.bookAppointment = async (req, res) => {
 };
 
 exports.rescheduleAppointment = async (req, res) => {
-  const { appointmentId } = req.body;
+  const { appointmentId, testType } = req.body; // Add testType to distinguish G2 or G
   try {
-    const user = await User.findById(req.session.user._id).populate('appointment');
+    const user = await User.findById(req.session.user._id).populate(testType === 'G2' ? 'g2Appointment' : 'gAppointment');
     if (!user) {
       throw new Error('User not found');
     }
@@ -137,33 +143,40 @@ exports.rescheduleAppointment = async (req, res) => {
       throw new Error('New appointment slot not available');
     }
 
-    if (user.appointment) {
-      const oldAppointment = await Appointment.findById(user.appointment);
+    // Free up the old appointment slot
+    const oldAppointmentId = testType === 'G2' ? user.g2Appointment : user.gAppointment;
+    if (oldAppointmentId) {
+      const oldAppointment = await Appointment.findById(oldAppointmentId);
       if (oldAppointment) {
         oldAppointment.isTimeSlotAvailable = true;
         await oldAppointment.save();
       }
     }
 
-    user.appointment = appointmentId;
+    // Book the new appointment
+    if (testType === 'G2') {
+      user.g2Appointment = appointmentId;
+    } else if (testType === 'G') {
+      user.gAppointment = appointmentId;
+    }
     newAppointment.isTimeSlotAvailable = false;
 
     await Promise.all([user.save(), newAppointment.save()]);
     const appointments = await Appointment.find({ isTimeSlotAvailable: true });
     const bookedAppointment = newAppointment;
-    res.render('g2', {
-      title: 'G2 License',
+    res.render(testType.toLowerCase(), {
+      title: `${testType} License`,
       user: { ...user._doc, licenseNo: user.getDecryptedLicenseNo() },
       appointments,
       bookedAppointment,
       message: 'Appointment rescheduled successfully!'
     });
   } catch (err) {
-    const user = await User.findById(req.session.user._id).populate('appointment');
+    const user = await User.findById(req.session.user._id).populate(testType === 'G2' ? 'g2Appointment' : 'gAppointment');
     const appointments = await Appointment.find({ isTimeSlotAvailable: true });
-    const bookedAppointment = user ? user.appointment || null : null;
-    res.render('g2', {
-      title: 'G2 License',
+    const bookedAppointment = user ? (testType === 'G2' ? user.g2Appointment : user.gAppointment) : null;
+    res.render(testType.toLowerCase(), {
+      title: `${testType} License`,
       user: user ? { ...user._doc, licenseNo: user.getDecryptedLicenseNo() } : null,
       appointments,
       bookedAppointment,

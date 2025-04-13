@@ -88,7 +88,10 @@ app.get('/admin-results', ensureAuthenticated, ensureAdmin, async (req, res) => 
   try {
     const drivers = await require('./models/user').find({
       userType: 'Driver',
-      passFail: { $ne: null }
+      $or: [
+        { 'g2TestResult.passFail': { $ne: null } },
+        { 'gTestResult.passFail': { $ne: null } }
+      ]
     });
     res.render('admin-results', {
       title: 'Test Results',

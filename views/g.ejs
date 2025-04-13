@@ -82,6 +82,7 @@
       </div>
       <h6>Reschedule Appointment</h6>
       <form method="POST" action="/g/reschedule" class="needs-validation" novalidate>
+        <input type="hidden" name="testType" value="G">
         <div class="mb-3">
           <label for="appointmentDate" class="form-label">Select Date</label>
           <input type="date" class="form-control" id="appointmentDate" name="appointmentDate" required>
@@ -124,13 +125,13 @@
       </form>
     <% } %>
 
-    <% if (user.examinerComment || user.passFail !== null) { %>
+    <% if (user.gTestResult.examinerComment || user.gTestResult.passFail !== null) { %>
       <hr>
-      <h5>Test Results</h5>
+      <h5>G Test Results</h5>
       <div class="card">
         <div class="card-body">
-          <p><strong>Examiner Comment:</strong> <%= user.examinerComment || 'No comment provided' %></p>
-          <p><strong>Result:</strong> <%= user.passFail === true ? 'Pass' : user.passFail === false ? 'Fail' : 'Not evaluated' %></p>
+          <p><strong>Examiner Comment:</strong> <%= user.gTestResult.examinerComment || 'No comment provided' %></p>
+          <p><strong>Result:</strong> <%= user.gTestResult.passFail === true ? 'Pass' : user.gTestResult.passFail === false ? 'Fail' : 'Not evaluated' %></p>
         </div>
       </div>
     <% } %>

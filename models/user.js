@@ -20,10 +20,16 @@ const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true, trim: true },
   password: { type: String, required: true },
   userType: { type: String, enum: ['Driver', 'Examiner', 'Admin'], default: 'Driver' },
-  appointment: { type: mongoose.Schema.Types.ObjectId, ref: 'Appointment' },
-  testType: { type: String, enum: ['G2', 'G'], default: null },
-  examinerComment: { type: String, default: '' },
-  passFail: { type: Boolean, default: null },
+  g2Appointment: { type: mongoose.Schema.Types.ObjectId, ref: 'Appointment', default: null },
+  gAppointment: { type: mongoose.Schema.Types.ObjectId, ref: 'Appointment', default: null },
+  g2TestResult: {
+    examinerComment: { type: String, default: '' },
+    passFail: { type: Boolean, default: null }
+  },
+  gTestResult: {
+    examinerComment: { type: String, default: '' },
+    passFail: { type: Boolean, default: null }
+  },
   car_details: {
     make: { type: String, default: 'default', trim: true },
     model: { type: String, default: 'default', trim: true },
@@ -32,6 +38,7 @@ const userSchema = new mongoose.Schema({
   }
 });
 
+// Encryption/decryption functions remain unchanged
 function encrypt(text) {
   const iv = crypto.randomBytes(IV_LENGTH);
   const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY), iv);
