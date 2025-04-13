@@ -58,7 +58,7 @@ exports.postG2 = async (req, res) => {
 
     const { firstName, lastName, licenseNumber, dob, carMake, carModel, carYear, platNumber } = req.body;
 
-    // Validate required fields
+    
     if (!firstName || !lastName || !licenseNumber || !dob) {
       const appointments = await Appointment.find({ isTimeSlotAvailable: true });
       const bookedAppointment = user.g2Appointment || null;
@@ -71,7 +71,7 @@ exports.postG2 = async (req, res) => {
       });
     }
 
-    // Server-side age validation
+    
     const dobDate = new Date(dob);
     const today = new Date();
     let calculatedAge = today.getFullYear() - dobDate.getFullYear();
@@ -92,7 +92,7 @@ exports.postG2 = async (req, res) => {
       });
     }
 
-    // Update user information
+    
     user.firstname = firstName;
     user.lastname = lastName;
     user.licenseNo = licenseNumber;

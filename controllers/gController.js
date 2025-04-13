@@ -93,7 +93,7 @@ exports.updateG = async (req, res) => {
 
 exports.bookAppointment = async (req, res) => {
   const { appointmentId } = req.body;
-  req.body.testType = 'G'; // Set testType for appointmentController
+  req.body.testType = 'G'; 
   return require('./appointmentController').bookAppointment(req, res);
 };
 

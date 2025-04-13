@@ -38,7 +38,6 @@ const userSchema = new mongoose.Schema({
   }
 });
 
-// Encryption/decryption functions remain unchanged
 function encrypt(text) {
   const iv = crypto.randomBytes(IV_LENGTH);
   const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY), iv);
