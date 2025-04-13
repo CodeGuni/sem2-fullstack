@@ -62,7 +62,7 @@ exports.getExaminer = async (req, res) => {
     });
 
     //log
-    console.log('Processed driverData:', driverData.map(d => ({
+    console.log('driverData:', driverData.map(d => ({
       name: `${d.firstname} ${d.lastname}`,
       testType: d.testType,
       appointment: d.appointment ? d.appointment.time : null
